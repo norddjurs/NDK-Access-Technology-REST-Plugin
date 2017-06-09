@@ -78,7 +78,7 @@ namespace NDK.AcctPlugin {
 				List<String> syncIgnorePid = this.GetLocalValues("AcctUserPidIgnoreList");
 				Boolean syncIgnoreCase = this.GetLocalValue("AcctUserPidIgnoreCase", true);
 				Boolean syncAllowPidNull = this.GetLocalValue("AcctUserPidAllowEmpty", false);
-				Int32 syncMaximumLevel = 5;
+				Int32 syncMaximumLevel = this.GetLocalValue("AcctUserMaximumLevel", 5);
 				Method syncRestMethod = Method.PUT;
 
 				// Validate group.
@@ -91,21 +91,14 @@ namespace NDK.AcctPlugin {
 					throw new Exception("Username and password may only contain ASCII characters.");
 				}
 
-				// Create the REST client.
-				RestClient restClient = new RestClient(hostUrl.Scheme + "://" + hostUrl.Host + (hostUrl.IsDefaultPort ? "" : ":" + hostUrl.Port.ToString(CultureInfo.InvariantCulture)));
-				restClient.Authenticator = new HttpBasicAuthenticator(userName, userPassword);
-
-				// Create REST request.
-				RestRequest restRequest = new RestRequest(hostUrl.PathAndQuery, syncRestMethod);
-				restRequest.XmlSerializer = new XmlDataContractSerializer();
-				restRequest.RequestFormat = DataFormat.Xml;
-
-				restClient.AddHandler("text/xml", new XmlDataContractSerializer());
-				restClient.AddHandler("application/xml", new XmlDataContractSerializer());
+				// Validate maximum level.
+				if (syncMaximumLevel < 0) {
+					syncMaximumLevel = 0;
+				}
 
 				// Setup synchronization evaluator.
 				EvaluateUserCollection usercol = new EvaluateUserCollection();
-				switch (syncEvaluationType.ToLower()) {
+				switch (syncEvaluationType.Trim().ToLower()) {
 					case "add":
 						usercol.EvaluationType = UserEvaluationType.AddNewUsers;
 						break;
@@ -115,7 +108,7 @@ namespace NDK.AcctPlugin {
 					case "addremove":
 						usercol.EvaluationType = UserEvaluationType.AddNewUsers | UserEvaluationType.RemoveNotPresent;
 						break;
-					case "Test":
+					case "test":
 					default:
 						usercol.EvaluationType = UserEvaluationType.Test;
 						break;
@@ -144,7 +137,7 @@ namespace NDK.AcctPlugin {
 
 				usercol.MaxSynchronizationLevel = (syncMaximumLevel);
 
-				// PID = CPR.
+				// PID = MA# for SOFD users, and SamAccountName for AD users.
 				// Add users.
 				List<String> userPids = new List<String>();
 				usercol.Users = new UserDataCollection();
@@ -154,13 +147,15 @@ namespace NDK.AcctPlugin {
 					if ((userPids.Contains(user.ExtensionAttribute2) == false) &&
 						((syncDeleteDisabledUsers == false) || (user.Enabled == true))) {
 						UserData user1 = new UserData();
-						user1.Pid = user.ExtensionAttribute2;	// TODO use system configuration.
+						user1.Pid = "AD-" + user.SamAccountName;
 						user1.Name = user.DisplayName;
 						user1.Phone = user.TelephoneNumber;
-						usercol.Users.Add(user1);
+						if ((user1.Pid != null) && (user1.Pid.Trim().Length > 0)) {
+							usercol.Users.Add(user1);
+						}
 
 						// Log.
-						this.LogDebug("Found user in Active Directory ({0})", user1.Name);
+						this.LogDebug("Found user in Active Directory ({0} - {1})", user1.Pid, user1.Name);
 					}
 					userPids.Add(user.ExtensionAttribute2);
 				}
@@ -175,14 +170,16 @@ namespace NDK.AcctPlugin {
 						foreach (SofdEmployee employee in employees) {
 							if (userPids.Contains(employee.CprNummer) == false) {
 								UserData user1 = new UserData();
-								user1.Pid = employee.CprNummer;
+								user1.Pid = "MA-" + employee.MedarbejderId.ToString();
 								user1.Name = employee.Navn;
 								user1.Phone = employee.TelefonNummer;
-								usercol.Users.Add(user1);
+								if ((user1.Pid != null) && (user1.Pid.Trim().Length > 0)) {
+									usercol.Users.Add(user1);
+								}
 								userPids.Add(employee.CprNummer);
 
 								// Log.
-								this.LogDebug("Found user in SOFD by job title id ({0})", user1.Name);
+								this.LogDebug("Found user in SOFD by job title id ({0} - {1})", user1.Pid, user1.Name);
 							}
 						}
 					} catch { }
@@ -198,14 +195,16 @@ namespace NDK.AcctPlugin {
 						foreach (SofdEmployee employee in employees) {
 							if (userPids.Contains(employee.CprNummer) == false) {
 								UserData user1 = new UserData();
-								user1.Pid = employee.CprNummer;
+								user1.Pid = "MA-" + employee.MedarbejderId.ToString();
 								user1.Name = employee.Navn;
 								user1.Phone = employee.TelefonNummer;
-								usercol.Users.Add(user1);
+								if ((user1.Pid != null) && (user1.Pid.Trim().Length > 0)) {
+									usercol.Users.Add(user1);
+								}
 								userPids.Add(employee.CprNummer);
 
 								// Log.
-								this.LogDebug("Found user in SOFD by job title ({0})", user1.Name);
+								this.LogDebug("Found user in SOFD by job title ({0} - {1})", user1.Pid, user1.Name);
 							}
 						}
 					} catch { }
@@ -221,14 +220,16 @@ namespace NDK.AcctPlugin {
 						foreach (SofdEmployee employee in employees) {
 							if (userPids.Contains(employee.CprNummer) == false) {
 								UserData user1 = new UserData();
-								user1.Pid = employee.CprNummer;
+								user1.Pid = "MA-" + employee.MedarbejderId.ToString();
 								user1.Name = employee.Navn;
 								user1.Phone = employee.TelefonNummer;
-								usercol.Users.Add(user1);
+								if ((user1.Pid != null) && (user1.Pid.Trim().Length > 0)) {
+									usercol.Users.Add(user1);
+								}
 								userPids.Add(employee.CprNummer);
 
 								// Log.
-								this.LogDebug("Found user in SOFD by organization id ({0})", user1.Name);
+								this.LogDebug("Found user in SOFD by organization id ({0} - {1})", user1.Pid, user1.Name);
 							}
 						}
 					} catch { }
@@ -244,14 +245,16 @@ namespace NDK.AcctPlugin {
 						foreach (SofdEmployee employee in employees) {
 							if (userPids.Contains(employee.CprNummer) == false) {
 								UserData user1 = new UserData();
-								user1.Pid = employee.CprNummer;
+								user1.Pid = "MA-" + employee.MedarbejderId.ToString();
 								user1.Name = employee.Navn;
 								user1.Phone = employee.TelefonNummer;
-								usercol.Users.Add(user1);
+								if ((user1.Pid != null) && (user1.Pid.Trim().Length > 0)) {
+									usercol.Users.Add(user1);
+								}
 								userPids.Add(employee.CprNummer);
 
 								// Log.
-								this.LogDebug("Found user in SOFD by organization ({0})", user1.Name);
+								this.LogDebug("Found user in SOFD by organization ({0} - {1})", user1.Pid, user1.Name);
 							}
 						}
 					} catch { }
@@ -267,14 +270,16 @@ namespace NDK.AcctPlugin {
 						foreach (SofdEmployee employee in employees) {
 							if (userPids.Contains(employee.CprNummer) == false) {
 								UserData user1 = new UserData();
-								user1.Pid = employee.CprNummer;
+								user1.Pid = "MA-" + employee.MedarbejderId.ToString();
 								user1.Name = employee.Navn;
 								user1.Phone = employee.TelefonNummer;
-								usercol.Users.Add(user1);
+								if ((user1.Pid != null) && (user1.Pid.Trim().Length > 0)) {
+									usercol.Users.Add(user1);
+								}
 								userPids.Add(employee.CprNummer);
 
 								// Log.
-								this.LogDebug("Found user in SOFD by pay class ({0})", user1.Name);
+								this.LogDebug("Found user in SOFD by pay class ({0} - {1})", user1.Pid, user1.Name);
 							}
 						}
 					} catch { }
@@ -287,6 +292,18 @@ namespace NDK.AcctPlugin {
 
 				// Log.
 				this.Log("Synchronizing {0} users ({1}).", usercol.Users.Count, syncEvaluationType);
+
+				// Create the REST client.
+				RestClient restClient = new RestClient(hostUrl.Scheme + "://" + hostUrl.Host + (hostUrl.IsDefaultPort ? "" : ":" + hostUrl.Port.ToString(CultureInfo.InvariantCulture)));
+				restClient.Authenticator = new HttpBasicAuthenticator(userName, userPassword);
+
+				// Create REST request.
+				RestRequest restRequest = new RestRequest(hostUrl.PathAndQuery, syncRestMethod);
+				restRequest.XmlSerializer = new XmlDataContractSerializer();
+				restRequest.RequestFormat = DataFormat.Xml;
+
+				restClient.AddHandler("text/xml", new XmlDataContractSerializer());
+				restClient.AddHandler("application/xml", new XmlDataContractSerializer());
 
 				// Send the request.
 				restRequest.AddBody(usercol);
@@ -329,7 +346,8 @@ namespace NDK.AcctPlugin {
 				List<List<String>> table = new List<List<String>>();
 
 				// Add message.
-				if ((usercol.EvaluationType & UserEvaluationType.Test) == UserEvaluationType.Test) {
+				if (syncEvaluationType.Trim().ToLower() == "test") {
+					//(usercol.EvaluationType.HasFlag(UserEvaluationType.Test) == true) {
 					html.AppendParagraph(
 						"This automatic task is DEACTIVATED.",
 						"When it is enabled, it will synchronize users between the active directory and Access Technology REST service."
@@ -399,6 +417,11 @@ namespace NDK.AcctPlugin {
 					table.Clear();
 					table.Add(new List<String>() { "Status Code", response.StatusCode.ToString()});
 					table.Add(new List<String>() { "Status Text", response.StatusDescription});
+					table.Add(new List<String>() { "URI", response.ResponseUri.ToString()});
+					foreach (Parameter header in response.Headers) {
+						table.Add(new List<String>() { "Header: " + header.Name, header.Value.ToString() });
+					}
+					table.Add(new List<String>() { "Content", response.Content });
 					table.Add(new List<String>() { "Error", response.ErrorMessage});
 
 					html.AppendHeading2("Communication Error");
@@ -416,7 +439,7 @@ namespace NDK.AcctPlugin {
 
 				table.Add(new List<String>() { "Host URL", hostUrl.ToString() });
 				table.Add(new List<String>() { "User Name", userName });
-
+				
 				if ((usercol.EvaluationType & UserEvaluationType.AddNewUsers) == UserEvaluationType.AddNewUsers) {
 					table.Add(new List<String>() { "Flag", "Adding new users." });
 				} else {
@@ -434,6 +457,8 @@ namespace NDK.AcctPlugin {
 				} else {
 					table.Add(new List<String>() { "Flag", "Do not allow empty user Pid." });
 				}
+
+				table.Add(new List<String>() { "Maximum Users", syncMaximumLevel.ToString() });
 
 				html.AppendHeading2("Configuration");
 				html.AppendVerticalTable(table);
