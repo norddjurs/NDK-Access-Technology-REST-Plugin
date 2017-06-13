@@ -2,13 +2,10 @@ using System;
 using System.Linq;
 using NDK.Framework;
 using RestSharp;
-using RestSharp.Serializers;
 using AcctPublicRestCommunicationLibrary;
 using System.Globalization;
 using System.Collections.Generic;
 using System.Net;
-using System.Text;
-using System.DirectoryServices.AccountManagement;
 
 namespace NDK.AcctPlugin {
 
@@ -144,7 +141,7 @@ namespace NDK.AcctPlugin {
 
 				// Add users who is member of the groupCareAccessUser group.
 				foreach (AdUser user in this.GetAllUsers(groupCareAccessUser)) {
-					if ((userPids.Contains(user.ExtensionAttribute2) == false) &&
+					if ((userPids.Contains(user.SamAccountName) == false) &&
 						((syncDeleteDisabledUsers == false) || (user.Enabled == true))) {
 						UserData user1 = new UserData();
 						user1.Pid = "AD-" + user.SamAccountName;
@@ -157,7 +154,7 @@ namespace NDK.AcctPlugin {
 						// Log.
 						this.LogDebug("Found user in Active Directory ({0} - {1})", user1.Pid, user1.Name);
 					}
-					userPids.Add(user.ExtensionAttribute2);
+					userPids.Add(user.SamAccountName);
 				}
 
 				// Add users from SOFD that matches the job title id.
@@ -168,15 +165,15 @@ namespace NDK.AcctPlugin {
 							new SofdEmployeeFilter_StillingsId(SqlWhereFilterOperator.AND, SqlWhereFilterValueOperator.Equals, Int32.Parse(sofdJobTitleId))
 						);
 						foreach (SofdEmployee employee in employees) {
-							if (userPids.Contains(employee.CprNummer) == false) {
+							if (userPids.Contains(employee.MaNummer.ToString()) == false) {
 								UserData user1 = new UserData();
-								user1.Pid = "MA-" + employee.MedarbejderId.ToString();
+								user1.Pid = "MA-" + employee.MaNummer.ToString();
 								user1.Name = employee.Navn;
 								user1.Phone = employee.TelefonNummer;
 								if ((user1.Pid != null) && (user1.Pid.Trim().Length > 0)) {
 									usercol.Users.Add(user1);
 								}
-								userPids.Add(employee.CprNummer);
+								userPids.Add(employee.MaNummer.ToString());
 
 								// Log.
 								this.LogDebug("Found user in SOFD by job title id ({0} - {1})", user1.Pid, user1.Name);
@@ -193,15 +190,15 @@ namespace NDK.AcctPlugin {
 							new SofdEmployeeFilter_StillingsBetegnelse(SqlWhereFilterOperator.AND, SqlWhereFilterValueOperator.Equals, sofdJobTitleName)
 						);
 						foreach (SofdEmployee employee in employees) {
-							if (userPids.Contains(employee.CprNummer) == false) {
+							if (userPids.Contains(employee.MaNummer.ToString()) == false) {
 								UserData user1 = new UserData();
-								user1.Pid = "MA-" + employee.MedarbejderId.ToString();
+								user1.Pid = "MA-" + employee.MaNummer.ToString();
 								user1.Name = employee.Navn;
 								user1.Phone = employee.TelefonNummer;
 								if ((user1.Pid != null) && (user1.Pid.Trim().Length > 0)) {
 									usercol.Users.Add(user1);
 								}
-								userPids.Add(employee.CprNummer);
+								userPids.Add(employee.MaNummer.ToString());
 
 								// Log.
 								this.LogDebug("Found user in SOFD by job title ({0} - {1})", user1.Pid, user1.Name);
@@ -218,15 +215,15 @@ namespace NDK.AcctPlugin {
 							new SofdEmployeeFilter_OrganisationId(SqlWhereFilterOperator.AND, SqlWhereFilterValueOperator.Equals, Int32.Parse(sofdOrganizationId))
 						);
 						foreach (SofdEmployee employee in employees) {
-							if (userPids.Contains(employee.CprNummer) == false) {
+							if (userPids.Contains(employee.MaNummer.ToString()) == false) {
 								UserData user1 = new UserData();
-								user1.Pid = "MA-" + employee.MedarbejderId.ToString();
+								user1.Pid = "MA-" + employee.MaNummer.ToString();
 								user1.Name = employee.Navn;
 								user1.Phone = employee.TelefonNummer;
 								if ((user1.Pid != null) && (user1.Pid.Trim().Length > 0)) {
 									usercol.Users.Add(user1);
 								}
-								userPids.Add(employee.CprNummer);
+								userPids.Add(employee.MaNummer.ToString());
 
 								// Log.
 								this.LogDebug("Found user in SOFD by organization id ({0} - {1})", user1.Pid, user1.Name);
@@ -243,15 +240,15 @@ namespace NDK.AcctPlugin {
 							new SofdEmployeeFilter_OrganisationNavn(SqlWhereFilterOperator.AND, SqlWhereFilterValueOperator.Equals, sofdOrganizationName)
 						);
 						foreach (SofdEmployee employee in employees) {
-							if (userPids.Contains(employee.CprNummer) == false) {
+							if (userPids.Contains(employee.MaNummer.ToString()) == false) {
 								UserData user1 = new UserData();
-								user1.Pid = "MA-" + employee.MedarbejderId.ToString();
+								user1.Pid = "MA-" + employee.MaNummer.ToString();
 								user1.Name = employee.Navn;
 								user1.Phone = employee.TelefonNummer;
 								if ((user1.Pid != null) && (user1.Pid.Trim().Length > 0)) {
 									usercol.Users.Add(user1);
 								}
-								userPids.Add(employee.CprNummer);
+								userPids.Add(employee.MaNummer.ToString());
 
 								// Log.
 								this.LogDebug("Found user in SOFD by organization ({0} - {1})", user1.Pid, user1.Name);
@@ -268,15 +265,15 @@ namespace NDK.AcctPlugin {
 							new SofdEmployeeFilter_LoenKlasse(SqlWhereFilterOperator.AND, SqlWhereFilterValueOperator.Equals, sofdPayClassName)
 						);
 						foreach (SofdEmployee employee in employees) {
-							if (userPids.Contains(employee.CprNummer) == false) {
+							if (userPids.Contains(employee.MaNummer.ToString()) == false) {
 								UserData user1 = new UserData();
-								user1.Pid = "MA-" + employee.MedarbejderId.ToString();
+								user1.Pid = "MA-" + employee.MaNummer.ToString();
 								user1.Name = employee.Navn;
 								user1.Phone = employee.TelefonNummer;
 								if ((user1.Pid != null) && (user1.Pid.Trim().Length > 0)) {
 									usercol.Users.Add(user1);
 								}
-								userPids.Add(employee.CprNummer);
+								userPids.Add(employee.MaNummer.ToString());
 
 								// Log.
 								this.LogDebug("Found user in SOFD by pay class ({0} - {1})", user1.Pid, user1.Name);
@@ -408,15 +405,15 @@ namespace NDK.AcctPlugin {
 						html.AppendHeading2("Ignored users");
 						html.AppendHorizontalTable(table, 1, 1);
 					}
-					if ((response.Data.AddedUsers == null) && (response.Data.UpdatedUsers == null) && (response.Data.DeletedUsers == null)) {// && (response.Data.IgnoredUsers == null)) {
+					if ((response.Data.AddedUsers == null) && (response.Data.UpdatedUsers == null) && (response.Data.DeletedUsers == null) && (response.Data.IgnoredUsers == null)) {
 						html.AppendHeading2("Ignored users");
 						html.AppendParagraph("No users were added, updated or deleted.");
 					}
 				} else {
 					// Communication error.
 					table.Clear();
-					table.Add(new List<String>() { "Status Code", response.StatusCode.ToString()});
-					table.Add(new List<String>() { "Status Text", response.StatusDescription});
+					table.Add(new List<String>() { "Status code", response.StatusCode.ToString()});
+					table.Add(new List<String>() { "Status text", response.StatusDescription});
 					table.Add(new List<String>() { "URI", response.ResponseUri.ToString()});
 					foreach (Parameter header in response.Headers) {
 						table.Add(new List<String>() { "Header: " + header.Name, header.Value.ToString() });
@@ -424,13 +421,13 @@ namespace NDK.AcctPlugin {
 					table.Add(new List<String>() { "Content", response.Content });
 					table.Add(new List<String>() { "Error", response.ErrorMessage});
 
-					html.AppendHeading2("Communication Error");
+					html.AppendHeading2("Communication error");
 					html.AppendVerticalTable(table);
 				}
 
 				// Configuration.
 				table.Clear();
-				table.Add(new List<String>() { "Group User", groupNameCareAccessUser });
+				table.Add(new List<String>() { "Group user", groupNameCareAccessUser });
 				if (failOnNoUsers == true) {
 					table.Add(new List<String>() { "Fail", "Fail when the 'GroupUser' does not contain any users." });
 				} else {
@@ -438,7 +435,7 @@ namespace NDK.AcctPlugin {
 				}
 
 				table.Add(new List<String>() { "Host URL", hostUrl.ToString() });
-				table.Add(new List<String>() { "User Name", userName });
+				table.Add(new List<String>() { "User name", userName });
 				
 				if ((usercol.EvaluationType & UserEvaluationType.AddNewUsers) == UserEvaluationType.AddNewUsers) {
 					table.Add(new List<String>() { "Flag", "Adding new users." });
@@ -458,7 +455,8 @@ namespace NDK.AcctPlugin {
 					table.Add(new List<String>() { "Flag", "Do not allow empty user Pid." });
 				}
 
-				table.Add(new List<String>() { "Maximum Users", syncMaximumLevel.ToString() });
+				table.Add(new List<String>() { "Maximum user updates", syncMaximumLevel.ToString() });
+				table.Add(new List<String>() { "All found users", usercol.Users.Count.ToString() });
 
 				html.AppendHeading2("Configuration");
 				html.AppendVerticalTable(table);
