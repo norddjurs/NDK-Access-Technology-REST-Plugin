@@ -74,7 +74,7 @@ namespace NDK.AcctPlugin {
 				String syncIgnorePidRegEx = this.GetLocalValue("AcctUserPidIgnoreRegex", String.Empty);
 				List<String> syncIgnorePid = this.GetLocalValues("AcctUserPidIgnoreList");
 				Boolean syncIgnoreCase = this.GetLocalValue("AcctUserPidIgnoreCase", true);
-				Boolean syncAllowPidNull = this.GetLocalValue("AcctUserPidAllowEmpty", false);
+				Boolean syncAllowPidNull = this.GetLocalValue("AcctUserPidAllowNull", true);
 				Int32 syncMaximumLevel = this.GetLocalValue("AcctUserMaximumLevel", 5);
 				Method syncRestMethod = Method.PUT;
 
