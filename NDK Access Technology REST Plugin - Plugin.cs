@@ -157,7 +157,7 @@ namespace NDK.AcctPlugin {
 									((queryUserMiFareIdOverrideSOFD == true) || (employee.MiFareId.IsNullOrWhiteSpace() == true))) {
 									// Update the employee.
 									employee.MiFareId = user.Card.Trim();
-									employee.Save();
+									employee.Save(true);
 
 									// Add to the report.
 									queryUserUpdatedSOFD.Add(employee);
