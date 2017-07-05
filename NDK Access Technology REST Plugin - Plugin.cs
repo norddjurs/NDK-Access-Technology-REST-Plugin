@@ -127,6 +127,7 @@ namespace NDK.AcctPlugin {
 								AdUser adUser = this.GetUser(user.Pid.Substring(3));
 								String adUserMiFareId = this.GetUserMiFareId(adUser);
 								SofdEmployee employee = this.GetEmployee(user.Pid.Substring(3));
+								String oldMiFareId = String.Empty;
 								if ((adUser != null) && (employee == null)) {
 									employee = this.GetEmployee(adUser.SamAccountName);
 								}
@@ -138,8 +139,10 @@ namespace NDK.AcctPlugin {
 								// Update Active Directory user.
 								if ((queryUserMiFareIdAD == true) &&
 									(adUser != null) &&
-									((queryUserMiFareIdOverrideAD == true) || (adUserMiFareId.IsNullOrWhiteSpace() == true))) {
+									((queryUserMiFareIdOverrideAD == true) || (adUserMiFareId.IsNullOrWhiteSpace() == true)) &&
+									(adUserMiFareId.GetNotNull().Equals(user.Card.Trim()) == false)) {
 									// Update the user.
+									oldMiFareId = adUserMiFareId;
 									adUserMiFareId = user.Card.Trim();
 									this.SetUserMiFareId(adUser, adUserMiFareId);
 									adUser.Save();
@@ -148,14 +151,16 @@ namespace NDK.AcctPlugin {
 									queryUserUpdatedAD.Add(adUser);
 
 									// Log.
-									this.Log("Updated MiFareId: {0}, {1}. MiFareId: {2}", adUser.SamAccountName, adUser.Name, adUserMiFareId);
+									this.Log("Updated MiFareId: {0}, {1}. MiFareId: {2} -> {3}", adUser.SamAccountName, adUser.Name, oldMiFareId, adUserMiFareId);
 								}
 
 								// Update SOFD Directory user.
 								if ((queryUserMiFareIdSOFD == true) &&
 									(employee != null) &&
-									((queryUserMiFareIdOverrideSOFD == true) || (employee.MiFareId.IsNullOrWhiteSpace() == true))) {
+									((queryUserMiFareIdOverrideSOFD == true) || (employee.MiFareId.IsNullOrWhiteSpace() == true)) &&
+									(employee.MiFareId.GetNotNull().Equals(user.Card.Trim()) == false)) {
 									// Update the employee.
+									oldMiFareId = employee.MiFareId;
 									employee.MiFareId = user.Card.Trim();
 									employee.Save(true);
 
@@ -163,7 +168,7 @@ namespace NDK.AcctPlugin {
 									queryUserUpdatedSOFD.Add(employee);
 
 									// Log.
-									this.Log("Updated MiFareId: {0}, {1}. MiFareId: {2}", employee.MaNummer, employee.Navn, employee.MiFareId);
+									this.Log("Updated MiFareId: {0}, {1}. MiFareId: {2} -> {3}", employee.MaNummer, employee.Navn, oldMiFareId, employee.MiFareId);
 								}
 							}
 						}
