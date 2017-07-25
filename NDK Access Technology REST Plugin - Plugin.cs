@@ -230,6 +230,7 @@ namespace NDK.AcctPlugin {
 				// PID = MA# for SOFD users, and SamAccountName for AD users.
 				// Add users.
 				List<String> userPids = new List<String>();
+				List<String> userCprs = new List<String>();
 				usercol.Users = new UserDataCollection();
 
 				// Add users who is member of the groupCareAccessUser group.
@@ -258,7 +259,8 @@ namespace NDK.AcctPlugin {
 							new SofdEmployeeFilter_StillingsId(SqlWhereFilterOperator.AND, SqlWhereFilterValueOperator.Equals, Int32.Parse(sofdJobTitleId))
 						);
 						foreach (SofdEmployee employee in employees) {
-							if (userPids.Contains(employee.MaNummer.ToString()) == false) {
+							if ((userPids.Contains(employee.MaNummer.ToString()) == false) &&
+								(userCprs.Contains(employee.CprNummer) == false)) {
 								UserData user1 = new UserData();
 								user1.Pid = "MA-" + employee.MaNummer.ToString();
 								user1.Name = employee.Navn;
@@ -267,6 +269,8 @@ namespace NDK.AcctPlugin {
 									usercol.Users.Add(user1);
 								}
 								userPids.Add(employee.MaNummer.ToString());
+								userCprs.Add(employee.CprNummer);
+
 
 								// Log.
 								this.LogDebug("Found user in SOFD by job title id ({0} - {1})", user1.Pid, user1.Name);
@@ -283,7 +287,8 @@ namespace NDK.AcctPlugin {
 							new SofdEmployeeFilter_StillingsBetegnelse(SqlWhereFilterOperator.AND, SqlWhereFilterValueOperator.Equals, sofdJobTitleName)
 						);
 						foreach (SofdEmployee employee in employees) {
-							if (userPids.Contains(employee.MaNummer.ToString()) == false) {
+							if ((userPids.Contains(employee.MaNummer.ToString()) == false) &&
+								(userCprs.Contains(employee.CprNummer) == false)) {
 								UserData user1 = new UserData();
 								user1.Pid = "MA-" + employee.MaNummer.ToString();
 								user1.Name = employee.Navn;
@@ -292,6 +297,7 @@ namespace NDK.AcctPlugin {
 									usercol.Users.Add(user1);
 								}
 								userPids.Add(employee.MaNummer.ToString());
+								userCprs.Add(employee.CprNummer);
 
 								// Log.
 								this.LogDebug("Found user in SOFD by job title ({0} - {1})", user1.Pid, user1.Name);
@@ -308,7 +314,8 @@ namespace NDK.AcctPlugin {
 							new SofdEmployeeFilter_OrganisationId(SqlWhereFilterOperator.AND, SqlWhereFilterValueOperator.Equals, Int32.Parse(sofdOrganizationId))
 						);
 						foreach (SofdEmployee employee in employees) {
-							if (userPids.Contains(employee.MaNummer.ToString()) == false) {
+							if ((userPids.Contains(employee.MaNummer.ToString()) == false) &&
+								(userCprs.Contains(employee.CprNummer) == false)) {
 								UserData user1 = new UserData();
 								user1.Pid = "MA-" + employee.MaNummer.ToString();
 								user1.Name = employee.Navn;
@@ -317,6 +324,7 @@ namespace NDK.AcctPlugin {
 									usercol.Users.Add(user1);
 								}
 								userPids.Add(employee.MaNummer.ToString());
+								userCprs.Add(employee.CprNummer);
 
 								// Log.
 								this.LogDebug("Found user in SOFD by organization id ({0} - {1})", user1.Pid, user1.Name);
@@ -333,7 +341,8 @@ namespace NDK.AcctPlugin {
 							new SofdEmployeeFilter_OrganisationNavn(SqlWhereFilterOperator.AND, SqlWhereFilterValueOperator.Equals, sofdOrganizationName)
 						);
 						foreach (SofdEmployee employee in employees) {
-							if (userPids.Contains(employee.MaNummer.ToString()) == false) {
+							if ((userPids.Contains(employee.MaNummer.ToString()) == false) &&
+								(userCprs.Contains(employee.CprNummer) == false)) {
 								UserData user1 = new UserData();
 								user1.Pid = "MA-" + employee.MaNummer.ToString();
 								user1.Name = employee.Navn;
@@ -342,6 +351,7 @@ namespace NDK.AcctPlugin {
 									usercol.Users.Add(user1);
 								}
 								userPids.Add(employee.MaNummer.ToString());
+								userCprs.Add(employee.CprNummer);
 
 								// Log.
 								this.LogDebug("Found user in SOFD by organization ({0} - {1})", user1.Pid, user1.Name);
@@ -358,7 +368,8 @@ namespace NDK.AcctPlugin {
 							new SofdEmployeeFilter_LoenKlasse(SqlWhereFilterOperator.AND, SqlWhereFilterValueOperator.Equals, sofdPayClassName)
 						);
 						foreach (SofdEmployee employee in employees) {
-							if (userPids.Contains(employee.MaNummer.ToString()) == false) {
+							if ((userPids.Contains(employee.MaNummer.ToString()) == false) &&
+								(userCprs.Contains(employee.CprNummer) == false)) {
 								UserData user1 = new UserData();
 								user1.Pid = "MA-" + employee.MaNummer.ToString();
 								user1.Name = employee.Navn;
@@ -367,6 +378,7 @@ namespace NDK.AcctPlugin {
 									usercol.Users.Add(user1);
 								}
 								userPids.Add(employee.MaNummer.ToString());
+								userCprs.Add(employee.CprNummer);
 
 								// Log.
 								this.LogDebug("Found user in SOFD by pay class ({0} - {1})", user1.Pid, user1.Name);
